@@ -4,6 +4,23 @@ var request = require('request');
 mongoose.connect('mongodb://localhost/hackednews');
 // In this file, build out a worker that will populate the database
 // with the data you need from the HackerNews API
+const options = {
+    url: 'https://api.github.com/repos/request/request',
+    headers: {
+        'User-Agent': 'request'
+    }
+};
+
+function callback(error, response, body) {
+    if (!error && response.statusCode == 200) {
+        const info = JSON.parse(body);
+        console.log(info.stargazers_count + " Stars");
+        console.log(info.forks_count + " Forks");
+    }
+}
+
+request(options, callback);
+
 
 
 // Here is an example of getting the top 500 stories from the API
@@ -12,25 +29,25 @@ mongoose.connect('mongodb://localhost/hackednews');
 var topStoriesURL = 'https://hacker-news.firebaseio.com/v0/topstories.json';
 
 var isJSONResponse = function(headers) {
-  return headers['content-type'].includes('json');
+    return headers['content-type'].includes('json');
 };
 
-var getJSONFromHackerNews = function (url, callback) {
-  request.get(url, function(err, response, body) {
-    var data = null;
-    if (err) {
-      callback(err, null);
-    } else if (!isJSONResponse(response.headers)) {
-      callback(new Error('Response did not contain JSON data.'), null);
-    } else {
-      data = JSON.parse(body);
-      callback(null, data);
-    }
-  });
+var getJSONFromHackerNews = function(url, callback) {
+    request.get(url, function(err, response, body) {
+        var data = null;
+        if (err) {
+            callback(err, null);
+        } else if (!isJSONResponse(response.headers)) {
+            callback(new Error('Response did not contain JSON data.'), null);
+        } else {
+            data = JSON.parse(body);
+            callback(null, data);
+        }
+    });
 };
 
 getJSONFromHackerNews(topStoriesURL, function(err, data) {
-  console.log(err, 'err, expect to be null');
-  console.log(data, 'data, expect to be ids for top 500 stories');
-  mongoose.disconnect();
+    console.log(err, 'err, expect to be null');
+    console.log(data, 'data, expect to be ids for top 500 stories');
+    mongoose.disconnect();
 });
